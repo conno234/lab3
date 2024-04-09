@@ -33,8 +33,8 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
 # This is the route for the root URL
 @app.route('/')
 def get_geojson():
-    table_name = "labtable"  # First I define the table name
-    geom_column = "geom"  # Then I define the geometry column name from which to grab the WKT
+    table_name = "landcover_shp"  # Updated table name
+    geom_column = "geom"  # Updated geometry column name
     
     geojson = fetch_geom_as_geojson(table_name, geom_column, db_params) # I fetch GeoJSON data from the database
     # And then I can construct structure the GeoJSON into Feature Collection format, per ArcOnline specifications
