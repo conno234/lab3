@@ -3,11 +3,10 @@ import psycopg2
 import json
 import os
 
-# First, I initialize my Flask application
+# Initialize Flask application
 app = Flask(__name__)
 
-# Next I need to establish the parameters needed to connect to the database
-# The login information has been stored as variables on the Google Cloud Run deployment for this.
+# Establish parameters to connect to the database
 db_params = {
     'database': os.environ.get("DB_DATABASE"),  
     'user': os.environ.get("DB_USER"),  
@@ -16,50 +15,53 @@ db_params = {
     'port': os.environ.get("DB_PORT") 
 }
 
-from flask import Flask, jsonify
-import psycopg2 
-import os
-from geojson import Feature, FeatureCollection, dumps
+# Function to fetch data from the database and convert it to GeoJSON
+def get_geojson():
+    try:
+        # Connect to the database
+        conn = psycopg2.connect(**db_params)
+        cursor = conn.cursor()
 
-# Initialize Flask application
-app = Flask(__name__)
+        # Execute the query to fetch all rows from the table
+        cursor.execute("SELECT grid_code, ST_AsText(geom) FROM landcover_shp")
 
-# Function to establish connection to PostGIS database
-def connect_to_db():
-    return psycopg2.connect(
-        database=os.environ.get("DB_DATABASE"),
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD"),
-        host=os.environ.get("DB_HOST"),
-        port=os.environ.get("DB_PORT")
-    )
+        # Fetch all rows
+        rows = cursor.fetchall()
 
-# Function to fetch data from PostGIS and convert to GeoJSON
-def get_geojson_from_postgis():
-    connection = connect_to_db()
-    cursor = connection.cursor()
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
 
-    # Fetch data from the table
-    cursor.execute("SELECT grid_code, ST_AsText(geom) FROM landcover_shp")
+        # Convert fetched data to GeoJSON
+        features = []
+        for row in rows:
+            feature = {
+                "type": "Feature",
+                "properties": {"grid_code": row[0]},
+                "geometry": json.loads(row[1])
+            }
+            features.append(feature)
 
-    features = []
-    for row in cursor.fetchall():
-        grid_code, geom_wkt = row
-        # Convert WKT to GeoJSON
-        feature = Feature(geometry=geom_wkt, properties={"grid_code": grid_code})
-        features.append(feature)
+        # Construct GeoJSON FeatureCollection
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": features
+        }
 
-    cursor.close()
-    connection.close()
+        return geojson_data
 
-    feature_collection = FeatureCollection(features)
-    return feature_collection
+    except psycopg2.Error as e:
+        print("Error fetching data from PostgreSQL:", e)
+        return None
 
-# API endpoint to return GeoJSON
+# Route to handle requests for GeoJSON data
 @app.route('/geojson', methods=['GET'])
-def geojson():
-    geojson_data = get_geojson_from_postgis()
-    return jsonify(geojson_data)
+def serve_geojson():
+    geojson_data = get_geojson()
+    if geojson_data:
+        return jsonify(geojson_data)
+    else:
+        return jsonify({"error": "Failed to fetch GeoJSON data"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
