@@ -1,67 +1,60 @@
 from flask import Flask, jsonify
-import psycopg2 
-import json
+import psycopg2
 import os
 
 # Initialize Flask application
 app = Flask(__name__)
 
-# Establish parameters to connect to the database
+# Database parameters
 db_params = {
-    'database': os.environ.get("DB_DATABASE"),  
-    'user': os.environ.get("DB_USER"),  
-    'password': os.environ.get("DB_PASSWORD"), 
-    'host': os.environ.get("DB_HOST"),  
-    'port': os.environ.get("DB_PORT") 
+    'database': 'lab1.2',  
+    'user': 'postgres',  
+    'password': 'IMissPinole1312!?', 
+    'host': '34.16.107.82',  
+    'port': '5432' 
 }
 
-# Function to fetch data from the database and convert it to GeoJSON
-def get_geojson():
+def fetch_grid_codes():
+    conn = None
     try:
-        # Connect to the database
+        # Connect to the PostgreSQL database
         conn = psycopg2.connect(**db_params)
+        
+        # Create a cursor
         cursor = conn.cursor()
-
-        # Execute the query to fetch all rows from the table
-        cursor.execute("SELECT grid_code, ST_AsText(geom) FROM landcover_shp")
-
+        
+        # Query to fetch all grid codes
+        query = "SELECT grid_code FROM landcover_shp"
+        
+        # Execute the query
+        cursor.execute(query)
+        
         # Fetch all rows
         rows = cursor.fetchall()
-
-        # Close the cursor and connection
+        
+        # Close cursor
         cursor.close()
+        
+        # Close connection
         conn.close()
-
-        # Convert fetched data to GeoJSON
-        features = []
-        for row in rows:
-            feature = {
-                "type": "Feature",
-                "properties": {"grid_code": row[0]},
-                "geometry": json.loads(row[1])
-            }
-            features.append(feature)
-
-        # Construct GeoJSON FeatureCollection
-        geojson_data = {
-            "type": "FeatureCollection",
-            "features": features
-        }
-
-        return geojson_data
-
-    except psycopg2.Error as e:
-        print("Error fetching data from PostgreSQL:", e)
+        
+        # Extract grid codes
+        grid_codes = [row[0] for row in rows]
+        
+        return grid_codes
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
         return None
 
-# Route to handle requests for GeoJSON data
-@app.route('/geojson', methods=['GET'])
-def serve_geojson():
-    geojson_data = get_geojson()
-    if geojson_data:
-        return jsonify(geojson_data)
+# Define endpoint to retrieve grid codes
+@app.route('/grid-codes', methods=['GET'])
+def get_grid_codes():
+    grid_codes = fetch_grid_codes()
+    if grid_codes:
+        return jsonify({'grid_codes': grid_codes})
     else:
-        return jsonify({"error": "Failed to fetch GeoJSON data"}), 500
+        return jsonify({'error': 'Failed to retrieve grid codes'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    # Run Flask app
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
