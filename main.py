@@ -50,7 +50,7 @@ def index():
         # Format output as HTML
         output = ''
         for row in grid_codes_with_geom:
-            grid_code, geom = row
+            station_id, air_temper, geom = row
             output += f"{station_id}, {air_temper}, {geom},<br>"
         return output
     else:
