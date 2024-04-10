@@ -1,8 +1,4 @@
-from flask import Flask
 import psycopg2
-import csv
-
-app = Flask(__name__)
 
 # Database parameters
 db_params = {
@@ -23,7 +19,7 @@ def fetch_grid_codes():
         cursor = conn.cursor()
         
         # Query to fetch all grid codes with geometries converted to WKT
-        query = "SELECT column_name, ST_AsText(geom) FROM landcover_shp"
+        query = "SELECT grid_code, ST_AsText(geom) FROM landcover_shp"
         
         # Execute the query
         cursor.execute(query)
@@ -31,34 +27,22 @@ def fetch_grid_codes():
         # Fetch all rows
         rows = cursor.fetchall()
         
-        # Get column names
-        col_names = [desc[0] for desc in cursor.description]
-        
+        # Print grid codes and WKT geometries on the same line
+        for row in rows:
+            print(f"{row[0]},{row[1]}")
+            
         # Close cursor
         cursor.close()
-        
-        # Prepare CSV data
-        csv_data = ','.join(col_names) + '\n'
-        for row in rows:
-            csv_data += ','.join(str(cell) for cell in row) + '\n'
-        
-        # Return CSV data
-        return csv_data
     except (Exception, psycopg2.DatabaseError) as error:
-        return str(error)
+        print(error)
     finally:
         # Close the connection
         if conn is not None:
             conn.close()
 
-@app.route('/')
-def index():
-    # Call the function to fetch grid codes
-    grid_codes_csv = fetch_grid_codes()
-    if isinstance(grid_codes_csv, str):
-        return grid_codes_csv
-    else:
-        return "An error occurred while fetching grid codes."
+# Call the function to fetch and print grid codes
+fetch_grid_codes()
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
