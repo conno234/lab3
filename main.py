@@ -51,7 +51,7 @@ def index():
         output = ''
         for row in grid_codes_with_geom:
             grid_code, geom = row
-            output += f"{grid_code}, {geom}<br>"
+            output += f"{grid_code}, {geom},<br>"
         return output
     else:
         return grid_codes_with_geom
