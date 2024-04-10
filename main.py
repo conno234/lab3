@@ -22,7 +22,7 @@ def fetch_grid_codes_with_geom():
         cursor = conn.cursor()
         
         # Query to fetch grid codes and geometries
-        query = "SELECT grid_code, ST_AsText(geom) FROM landcover_shp"
+        query = "SELECT station_id, air_temper, ST_AsText(geom) FROM minn_temp"
         
         # Execute the query
         cursor.execute(query)
@@ -51,7 +51,7 @@ def index():
         output = ''
         for row in grid_codes_with_geom:
             grid_code, geom = row
-            output += f"{grid_code}, {geom},<br>"
+            output += f"{station_id}, {air_temper}, {geom},<br>"
         return output
     else:
         return grid_codes_with_geom
