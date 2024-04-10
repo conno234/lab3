@@ -12,7 +12,7 @@ db_params = {
     'port': '5432' 
 }
 
-def fetch_grid_codes():
+def fetch_grid_codes_with_geom():
     conn = None
     try:
         # Connect to the PostgreSQL database
@@ -21,8 +21,8 @@ def fetch_grid_codes():
         # Create a cursor
         cursor = conn.cursor()
         
-        # Query to fetch all grid codes with geometries converted to WKT
-        query = "SELECT ST_AsText(geom) FROM landcover_shp"
+        # Query to fetch grid codes and geometries
+        query = "SELECT grid_code, ST_AsText(geom) FROM landcover_shp"
         
         # Execute the query
         cursor.execute(query)
@@ -33,8 +33,8 @@ def fetch_grid_codes():
         # Close cursor
         cursor.close()
         
-        # Return grid codes
-        return [row[0] for row in rows]
+        # Return grid codes and geometries
+        return rows
     except (Exception, psycopg2.DatabaseError) as error:
         return str(error)
     finally:
@@ -44,12 +44,17 @@ def fetch_grid_codes():
 
 @app.route('/')
 def index():
-    # Call the function to fetch grid codes
-    grid_codes = fetch_grid_codes()
-    if isinstance(grid_codes, list):
-        return '<br>'.join(grid_codes)
+    # Call the function to fetch grid codes and geometries
+    grid_codes_with_geom = fetch_grid_codes_with_geom()
+    if isinstance(grid_codes_with_geom, list):
+        # Format output as HTML
+        output = ''
+        for row in grid_codes_with_geom:
+            grid_code, geom = row
+            output += f"Grid Code: {grid_code}, Geometry: {geom}<br>"
+        return output
     else:
-        return grid_codes
+        return grid_codes_with_geom
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
