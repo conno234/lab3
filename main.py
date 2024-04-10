@@ -27,16 +27,19 @@ def fetch_grid_codes():
         # Execute the query
         cursor.execute(query)
         
+        # Fetch column headers
+        column_headers = [desc[0] for desc in cursor.description]
+        
         # Fetch all rows
         rows = cursor.fetchall()
         
         # Close cursor
         cursor.close()
         
-        # Return grid codes
-        return [row[0] for row in rows]
+        # Return column headers and grid codes
+        return column_headers, [row[0] for row in rows]
     except (Exception, psycopg2.DatabaseError) as error:
-        return str(error)
+        return str(error), None
     finally:
         # Close the connection
         if conn is not None:
@@ -44,12 +47,15 @@ def fetch_grid_codes():
 
 @app.route('/')
 def index():
-    # Call the function to fetch grid codes
-    grid_codes = fetch_grid_codes()
-    if isinstance(grid_codes, list):
-        return '<br>'.join(grid_codes)
+    # Call the function to fetch column headers and grid codes
+    column_headers, grid_codes = fetch_grid_codes()
+    if grid_codes is not None:
+        output = "<h1>Column Headers:</h1><br>" + ', '.join(column_headers) + "<br><br>"
+        output += "<h1>Grid Codes:</h1><br>" + '<br>'.join(grid_codes)
+        return output
     else:
-        return grid_codes
+        return "Error: " + column_headers
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
