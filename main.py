@@ -1,12 +1,17 @@
+from flask import Flask, jsonify
 import psycopg2
+import os
+
+# Initialize Flask application
+app = Flask(__name__)
 
 # Database parameters
 db_params = {
-    'database': 'lab1.2',  
-    'user': 'postgres',  
-    'password': 'IMissPinole1312!?', 
-    'host': '34.16.107.82',  
-    'port': '5432' 
+    'database': os.environ.get('DB_DATABASE'),
+    'user': os.environ.get('DB_USER'),
+    'password': os.environ.get('DB_PASSWORD'),
+    'host': os.environ.get('DB_HOST'),
+    'port': os.environ.get('DB_PORT')
 }
 
 def fetch_grid_codes():
@@ -14,25 +19,24 @@ def fetch_grid_codes():
     try:
         # Connect to the PostgreSQL database
         conn = psycopg2.connect(**db_params)
-        
+
         # Create a cursor
         cursor = conn.cursor()
-        
+
         # Query to fetch all grid codes with geometries converted to WKT
         query = "SELECT grid_code, ST_AsText(geom) FROM landcover_shp"
-        
+
         # Execute the query
         cursor.execute(query)
-        
+
         # Fetch all rows
         rows = cursor.fetchall()
-        
-        # Print grid codes and WKT geometries on the same line
-        for row in rows:
-            print(f"{row[0]},{row[1]}")
-            
+
         # Close cursor
         cursor.close()
+
+        return [{'grid_code': row[0], 'geometry': row[1]} for row in rows]
+
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
     finally:
@@ -40,9 +44,11 @@ def fetch_grid_codes():
         if conn is not None:
             conn.close()
 
-# Call the function to fetch and print grid codes
-fetch_grid_codes()
-
+# API endpoint to return grid codes and WKT geometries
+@app.route('/grid-codes', methods=['GET'])
+def get_grid_codes():
+    grid_codes = fetch_grid_codes()
+    return jsonify(grid_codes)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
