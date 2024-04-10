@@ -1,20 +1,18 @@
-from flask import Flask, jsonify
+from flask import Flask
 import psycopg2
-import os
+import csv
 
-# Initialize Flask application
 app = Flask(__name__)
 
 # Database parameters
 db_params = {
-    'database': os.environ.get("DB_DATABASE"),  
-    'user': os.environ.get("DB_USER"),  
-    'password': os.environ.get("DB_PASSWORD"), 
-    'host': os.environ.get("DB_HOST"),  
-    'port': os.environ.get("DB_PORT") 
+    'database': 'lab1.2',  
+    'user': 'postgres',  
+    'password': 'IMissPinole1312!?', 
+    'host': '34.16.107.82',  
+    'port': '5432' 
 }
 
-# Function to fetch grid codes and geometries
 def fetch_grid_codes():
     conn = None
     try:
@@ -25,7 +23,7 @@ def fetch_grid_codes():
         cursor = conn.cursor()
         
         # Query to fetch all grid codes with geometries converted to WKT
-        query = "SELECT grid_code, ST_AsText(geom) FROM landcover_shp"
+        query = "SELECT column_name, ST_AsText(geom) FROM landcover_shp"
         
         # Execute the query
         cursor.execute(query)
@@ -33,27 +31,34 @@ def fetch_grid_codes():
         # Fetch all rows
         rows = cursor.fetchall()
         
+        # Get column names
+        col_names = [desc[0] for desc in cursor.description]
+        
         # Close cursor
         cursor.close()
         
-        return rows
+        # Prepare CSV data
+        csv_data = ','.join(col_names) + '\n'
+        for row in rows:
+            csv_data += ','.join(str(cell) for cell in row) + '\n'
         
+        # Return CSV data
+        return csv_data
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        return str(error)
     finally:
         # Close the connection
         if conn is not None:
             conn.close()
 
-# API endpoint to return grid codes and geometries as JSON
-@app.route('/grid-codes', methods=['GET'])
-def get_grid_codes():
-    rows = fetch_grid_codes()
-    if rows:
-        data = [{"grid_code": row[0], "geometry": row[1]} for row in rows]
-        return jsonify(data)
+@app.route('/')
+def index():
+    # Call the function to fetch grid codes
+    grid_codes_csv = fetch_grid_codes()
+    if isinstance(grid_codes_csv, str):
+        return grid_codes_csv
     else:
-        return jsonify([])
+        return "An error occurred while fetching grid codes."
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    app.run(debug=True, host='0.0.0.0', port=8080)
