@@ -30,15 +30,13 @@ def get_kriging_point():
         
         # Wrapping the geojson in a Feature Collection
         feature_collection = {
-            "features": geojson,
-            "type": "FeatureCollection" # Assuming geojson is already a list of features
+            "type": "FeatureCollection", # Move "type" to the root level
+            "features": geojson  # Assuming geojson is already a list of features
         }
         
         return jsonify(feature_collection)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
 
 @app.route('/kriging_diff')
 def get_kriging_diff():
