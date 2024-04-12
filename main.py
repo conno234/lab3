@@ -23,25 +23,6 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     return geojson
 
 
-
-@app.route('/kriging_point')
-def get_kriging_point():
-    try:
-        table_name = "kriging_temper_point"
-        geom_column = "shape"
-        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        
-        # Wrapping the geojson in a Feature Collection
-        feature_collection = {
-            "type": "FeatureCollection", # Move "type" to the root level
-            "features": geojson  # Assuming geojson is already a list of features
-        }
-        
-        return jsonify(feature_collection)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
 @app.route('/kriging_point_test')
 def get_kriging_point_test():
     try:
@@ -57,43 +38,26 @@ def get_kriging_point_test():
 @app.route('/kriging_diff')
 def get_kriging_diff():
     try:
-        table_name = "kriging_difference_elev"
+        table_name = "kriging_temper_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        feature_collection = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": geojson,
-                    "properties": {}  # No additional properties for now
-                }
-            ]
-        }
-        return jsonify(feature_collection)
+        
+        # Returning the fetched GeoJSON as is
+        return jsonify(geojson)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/idw_point')
 def get_idw_point():
     try:
-        table_name = "idw_difference_point"
+        table_name = "kriging_temper_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        feature_collection = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": geojson,
-                    "properties": {}  # No additional properties for now
-                }
-            ]
-        }
-        return jsonify(feature_collection)
+        
+        # Returning the fetched GeoJSON as is
+        return jsonify(geojson)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
