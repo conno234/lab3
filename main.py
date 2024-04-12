@@ -38,7 +38,7 @@ def get_kriging_point_test():
 @app.route('/kriging_diff')
 def get_kriging_diff():
     try:
-        table_name = "kriging_temper_point"
+        table_name = "kriging_difference_elev"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
         
@@ -47,10 +47,10 @@ def get_kriging_diff():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/idw_point')
-def get_idw_point():
+@app.route('/idw_diff')
+def get_idw_diff():
     try:
-        table_name = "kriging_temper_point"
+        table_name = "idw_difference_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
         
