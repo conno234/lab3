@@ -17,12 +17,9 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn = psycopg2.connect(**db_params)
     cur = conn.cursor()
     cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(ST_AsGeoJSON({table_name}.*)::json)) FROM {table_name}")
-     geojson_with_slashes = {
-        "type": "FeatureCollection",
-        "features": features
-    }
+    geojson = cur.fetchone()[0]
     conn.close()
-    return geojson_with_slashes
+    return geojson
 
 @app.route('/kriging_point')
 def get_kriging_point():
