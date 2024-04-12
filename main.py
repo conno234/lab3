@@ -34,10 +34,50 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     return geojson_with_slashes
 
 
-@app.route('/')
+@app.route('/kriging_point')
 def get_geojson():
     try:
         table_name = "kriging_temper_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": geojson,
+                    "properties": {}  # No additional properties for now
+                }
+            ]
+        }
+        return jsonify(feature_collection)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/kriging_diff')
+def get_geojson():
+    try:
+        table_name = "kriging_difference_elev"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": geojson,
+                    "properties": {}  # No additional properties for now
+                }
+            ]
+        }
+        return jsonify(feature_collection)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/idw_point')
+def get_geojson():
+    try:
+        table_name = "idw_difference_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
         feature_collection = {
