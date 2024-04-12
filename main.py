@@ -26,7 +26,7 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
         # Handle exceptions gracefully, log or return appropriate error response
      return geojson_with_slashes
 
-@app.route('/kriging_point')
+@app.route('/')
 def get_geojson():
     try:
         table_name = "kriging_temper_point"
