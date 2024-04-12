@@ -30,8 +30,8 @@ def get_kriging_point():
         
         # Wrapping the geojson in a Feature Collection
         feature_collection = {
-            "type": "FeatureCollection",
-            "features": geojson  # Assuming geojson is already a list of features
+            "features": geojson,
+            "type": "FeatureCollection" # Assuming geojson is already a list of features
         }
         
         return jsonify(feature_collection)
