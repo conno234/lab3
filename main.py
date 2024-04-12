@@ -31,6 +31,7 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
         # Handle exceptions gracefully, log or return appropriate error response
     return geojson_with_slashes
 
+
 @app.route('/kriging_point')
 def get_geojson():
     try:
@@ -50,6 +51,47 @@ def get_geojson():
         return jsonify(feature_collection)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/kriging_diff')
+def get_geojson():
+    try:
+        table_name = "kriging_difference_elev"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": geojson,
+                    "properties": {}  # No additional properties for now
+                }
+            ]
+        }
+        return jsonify(feature_collection)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/idw_diff')
+def get_geojson():
+    try:
+        table_name = "idw_difference_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": geojson,
+                    "properties": {}  # No additional properties for now
+                }
+            ]
+        }
+        return jsonify(feature_collection)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
