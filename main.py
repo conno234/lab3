@@ -13,13 +13,48 @@ db_params = {
     'port': '5432' 
 }
 
+#def fetch_geom_as_geojson(table_name, geom_column, db_params):
+ #   conn = psycopg2.connect(**db_params)
+   # cur = conn.cursor()
+   # cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(ST_AsGeoJSON({table_name}.*)::json)) FROM {table_name}")
+  #  geojson_with_slashes = cur.fetchone()[0]
+   # conn.close()
+   # return geojson_with_slashes
+
+
+
 def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn = psycopg2.connect(**db_params)
     cur = conn.cursor()
-    cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(ST_AsGeoJSON({table_name}.*)::json)) FROM {table_name}")
-    geojson_with_slashes = cur.fetchone()[0]
+    cur.execute(f"SELECT ST_AsGeoJSON({geom_column}) FROM {table_name}")
+    geojson = cur.fetchone()[0]
     conn.close()
-    return geojson_with_slashes
+    return geojson
+
+@app.route('/kriging_point_test')
+def get_kriging_point():
+    try:
+        table_name = "kriging_temper_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        feature_collection = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": json.loads(geojson),
+                    "properties": {}  # No additional properties for now
+                }
+            ]
+        }
+        return jsonify(feature_collection)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
 
 @app.route('/kriging_point')
 def get_kriging_point():
