@@ -38,7 +38,7 @@ def get_kriging_point_test():
 @app.route('/kriging_diff')
 def get_kriging_diff():
     try:
-        table_name = "kriging_difference_elev"
+        table_name = "kriging_differ_elev"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
         
