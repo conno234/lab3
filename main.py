@@ -17,7 +17,7 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     try:
         conn = psycopg2.connect(**db_params)
         cur = conn.cursor()
-        cur.execute(f"SELECT ST_AsGeoJSON({geom_column}) FROM {table_name} LIMIT 1")
+        cur.execute(f"SELECT ST_AsGeoJSON({table_name}.*) FROM {table_name}")
         geojson_with_slashes = cur.fetchone()[0]
         conn.close()
         geojson_without_slashes = json.loads(geojson_with_slashes.replace("\\", ""))
@@ -26,7 +26,7 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
         # Handle exceptions gracefully, log or return appropriate error response
         return jsonify({'error': str(e)}), 500
 
-@app.route('/')
+@app.route('/kriging_point')
 def get_geojson():
     try:
         table_name = "kriging_temper_point"
