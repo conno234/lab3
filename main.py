@@ -22,36 +22,6 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn.close()
     return geojson
 
-
-
-@app.route('/kriging_point_test')
-def get_kriging_point():
-    try:
-        table_name = "kriging_temper_point"
-        geom_column = "shape"
-        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        
-        # Modifying GeoJSON format
-        modified_geojson = {
-            "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": feature["geometry"]["coordinates"]
-                },
-                "properties": {}
-            } for feature in geojson["features"]]
-        }
-        
-        return jsonify(modified_geojson)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-
-
-
 @app.route('/kriging_point')
 def get_kriging_point():
     try:
@@ -111,3 +81,44 @@ def get_idw_point():
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
+
+
+I need to modify these geojsons so they follow this format: { "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [102.0, 0.5]
+          },
+          "properties": {
+            "prop0": "value0"
+          }
+        },
+      { "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+            ]
+          },
+        "properties": {
+          "prop0": "value0",
+          "prop1": 0.0
+          }
+        },
+      { "type": "Feature",
+         "geometry": {
+           "type": "Polygon",
+           "coordinates": [
+             [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+               [100.0, 1.0], [100.0, 0.0] ]
+             ]
+         },
+         "properties": {
+           "prop0": "value0",
+           "prop1": {"this": "that"}
+           }
+         }
+       ]
+     }
+
