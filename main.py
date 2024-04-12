@@ -17,7 +17,7 @@ db_params = {
 def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn = psycopg2.connect(**db_params)
     cur = conn.cursor()
-    cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(JSON_BUILD_OBJECT('type', 'Feature', 'geometry', ST_AsGeoJSON({table_name}.*)::json))) FROM {table_name}")
+    cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(JSON_BUILD_OBJECT('type', 'Feature', ST_AsGeoJSON({table_name}.*)::json))) FROM {table_name}")
     geojson = cur.fetchone()[0]
     conn.close()
     return geojson
