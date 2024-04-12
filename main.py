@@ -22,6 +22,36 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn.close()
     return geojson
 
+
+
+@app.route('/kriging_point_test')
+def get_kriging_point():
+    try:
+        table_name = "kriging_temper_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        
+        # Modifying GeoJSON format
+        modified_geojson = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": feature["geometry"]["coordinates"]
+                },
+                "properties": {}
+            } for feature in geojson["features"]]
+        }
+        
+        return jsonify(modified_geojson)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
 @app.route('/kriging_point')
 def get_kriging_point():
     try:
