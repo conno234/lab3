@@ -22,6 +22,8 @@ def fetch_geom_as_geojson(table_name, geom_column, db_params):
     conn.close()
     return geojson
 
+
+
 @app.route('/kriging_point')
 def get_kriging_point():
     try:
@@ -38,6 +40,19 @@ def get_kriging_point():
         return jsonify(feature_collection)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/kriging_point_test')
+def get_kriging_point_test():
+    try:
+        table_name = "kriging_temper_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        
+        # Returning the fetched GeoJSON as is
+        return jsonify(geojson)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/kriging_diff')
 def get_kriging_diff():
@@ -58,6 +73,7 @@ def get_kriging_diff():
         return jsonify(feature_collection)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/idw_point')
 def get_idw_point():
