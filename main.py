@@ -13,7 +13,16 @@ db_params = {
     'port': '5432' 
 }
 
+
 def fetch_geom_as_geojson(table_name, geom_column, db_params):
+    conn = psycopg2.connect(**db_params)
+    cur = conn.cursor()
+    cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(JSON_BUILD_OBJECT('type', 'Feature', 'geometry', ST_AsGeoJSON({table_name}.*)::json))) FROM {table_name}")
+    geojson = cur.fetchone()[0]
+    conn.close()
+    return geojson
+
+def fetch_geom_as_geojson_orig(table_name, geom_column, db_params):
     conn = psycopg2.connect(**db_params)
     cur = conn.cursor()
     cur.execute(f"SELECT JSON_BUILD_OBJECT('type','FeatureCollection', 'features', JSON_AGG(ST_AsGeoJSON({table_name}.*)::json)) FROM {table_name}")
