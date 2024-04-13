@@ -29,8 +29,7 @@ def get_kriging_elev_point():
         table_name = "kriging_elev_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        
-        # Returning the fetched GeoJSON as is
+   
         return jsonify(geojson)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -41,8 +40,7 @@ def get_kriging_elev_diff():
         table_name = "kriging_differ_elev"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        
-        # Returning the fetched GeoJSON as is
+       
         return jsonify(geojson)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -54,8 +52,7 @@ def get_idw_temp_point():
         table_name = "idw_temper_point"
         geom_column = "shape"
         geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
-        
-        # Returning the fetched GeoJSON as is
+
         return jsonify(geojson)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
