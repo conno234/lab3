@@ -47,6 +47,20 @@ def get_kriging_diff():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/idw_point')
+def get_idw_point():
+    try:
+        table_name = "idw_temper_point"
+        geom_column = "shape"
+        geojson = fetch_geom_as_geojson(table_name, geom_column, db_params)
+        
+        # Returning the fetched GeoJSON as is
+        return jsonify(geojson)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/idw_diff')
 def get_idw_diff():
     try:
