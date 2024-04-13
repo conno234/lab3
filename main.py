@@ -1,3 +1,5 @@
+# Note this code was made using AI generated AI
+
 from flask import Flask, jsonify
 import psycopg2 
 import json
